@@ -26,16 +26,18 @@ func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, erro
 	return out, nil
 }
 
+type PodcastUUID string
+
 type SubscribedPodcasts struct {
 	Podcasts []struct {
-		ID                int    `json:"id"`
-		UUID              string `json:"uuid"`
-		URL               string `json:"url"`
-		Title             string `json:"title"`
-		Description       string `json:"description"`
-		ThumbnailURL      string `json:"thumbnail_url"`
-		Author            string `json:"author"`
-		EpisodesSortOrder int    `json:"episodes_sort_order"`
+		ID                int         `json:"id"`
+		UUID              PodcastUUID `json:"uuid"`
+		URL               string      `json:"url"`
+		Title             string      `json:"title"`
+		Description       string      `json:"description"`
+		ThumbnailURL      string      `json:"thumbnail_url"`
+		Author            string      `json:"author"`
+		EpisodesSortOrder int         `json:"episodes_sort_order"`
 	} `json:"podcasts"`
 
 	App struct {

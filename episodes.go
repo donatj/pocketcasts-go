@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func (acon *AuthedConnection) EpisodesFindByPodcast(UUID string) (*FindByPodcast, error) {
+func (acon *AuthedConnection) EpisodesFindByPodcast(UUID PodcastUUID) (*FindByPodcast, error) {
 	data := FindByPodcastRequest{
 		UUID: UUID,
 		Page: 1,
@@ -45,10 +45,12 @@ func (acon *AuthedConnection) EpisodesFindByPodcast(UUID string) (*FindByPodcast
 }
 
 type FindByPodcastRequest struct {
-	UUID string `json:"uuid"`
-	Page int    `json:"page"`
-	Sort int    `json:"sort"`
+	UUID PodcastUUID `json:"uuid"`
+	Page int         `json:"page"`
+	Sort int         `json:"sort"`
 }
+
+type EpisodeUUID string
 
 type FindByPodcast struct {
 	Status    string `json:"status"`
@@ -56,8 +58,9 @@ type FindByPodcast struct {
 	Copyright string `json:"copyright"`
 	Result    struct {
 		Episodes []struct {
-			ID            interface{} `json:"id"`
-			UUID          string      `json:"uuid"`
+			// exists but is for some reason always null - omitting
+			// ID            interface{} `json:"id"`
+			UUID          EpisodeUUID `json:"uuid"`
 			URL           string      `json:"url"`
 			Title         string      `json:"title"`
 			PublishedAt   string      `json:"published_at"`
@@ -66,9 +69,10 @@ type FindByPodcast struct {
 			Size          int         `json:"size"`
 			PlayingStatus int         `json:"playing_status"`
 			PlayedUpTo    int         `json:"played_up_to"`
-			IsDeleted     PKBoolean   `json:"is_deleted"`
-			Starred       PKBoolean   `json:"starred"`
-			IsVideo       PKBoolean   `json:"is_video"`
+
+			IsDeleted PKBoolean `json:"is_deleted"`
+			Starred   PKBoolean `json:"starred"`
+			IsVideo   PKBoolean `json:"is_video"`
 		} `json:"episodes"`
 		Total int `json:"total"`
 	} `json:"result"`
