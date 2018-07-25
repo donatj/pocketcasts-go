@@ -2,8 +2,8 @@ package pocketcasts
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/cookiejar"
@@ -63,42 +63,16 @@ func (con *Connection) Authenticate(username, password string) (*AuthedConnectio
 	}, nil
 }
 
-func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, error) {
-	req, err := http.NewRequest("POST", "https://play.pocketcasts.com/web/podcasts/all.json", nil)
+type ConvertibleBoolean bool
 
-	// Fetch Request
-	resp, err := acon.Client.Do(req)
-	if err != nil {
-		return nil, err
+func (bit ConvertibleBoolean) UnmarshalJSON(data []byte) error {
+	asString := string(data)
+	if asString == "1" || asString == "true" {
+		bit = true
+	} else if asString == "0" || asString == "false" {
+		bit = false
+	} else {
+		return errors.New(fmt.Sprintf("Boolean unmarshal error: invalid input %s", asString))
 	}
-
-	dec := json.NewDecoder(resp.Body)
-
-	out := &SubscribedPodcasts{}
-
-	err = dec.Decode(out)
-	if err != nil {
-		return nil, err
-	}
-
-	return out, nil
-}
-
-type SubscribedPodcasts struct {
-	Podcasts []struct {
-		ID                int    `json:"id"`
-		UUID              string `json:"uuid"`
-		URL               string `json:"url"`
-		Title             string `json:"title"`
-		Description       string `json:"description"`
-		ThumbnailURL      string `json:"thumbnail_url"`
-		Author            string `json:"author"`
-		EpisodesSortOrder int    `json:"episodes_sort_order"`
-	} `json:"podcasts"`
-	App struct {
-		UserVersionCode int     `json:"userVersionCode"`
-		VersionCode     int     `json:"versionCode"`
-		VersionName     float64 `json:"versionName"`
-		VersionSummary  string  `json:"versionSummary"`
-	} `json:"app"`
+	return nil
 }
