@@ -56,19 +56,19 @@ type FindByPodcast struct {
 	Copyright string `json:"copyright"`
 	Result    struct {
 		Episodes []struct {
-			ID            interface{}        `json:"id"`
-			UUID          string             `json:"uuid"`
-			URL           string             `json:"url"`
-			Title         string             `json:"title"`
-			PublishedAt   string             `json:"published_at"`
-			Duration      string             `json:"duration"`
-			FileType      string             `json:"file_type"`
-			Size          int                `json:"size"`
-			PlayingStatus int                `json:"playing_status"`
-			PlayedUpTo    int                `json:"played_up_to"`
-			IsDeleted     ConvertibleBoolean `json:"is_deleted"`
-			Starred       ConvertibleBoolean `json:"starred"`
-			IsVideo       ConvertibleBoolean `json:"is_video"`
+			ID            interface{} `json:"id"`
+			UUID          string      `json:"uuid"`
+			URL           string      `json:"url"`
+			Title         string      `json:"title"`
+			PublishedAt   string      `json:"published_at"`
+			Duration      string      `json:"duration"`
+			FileType      string      `json:"file_type"`
+			Size          int         `json:"size"`
+			PlayingStatus int         `json:"playing_status"`
+			PlayedUpTo    int         `json:"played_up_to"`
+			IsDeleted     PKBoolean   `json:"is_deleted"`
+			Starred       PKBoolean   `json:"starred"`
+			IsVideo       PKBoolean   `json:"is_video"`
 		} `json:"episodes"`
 		Total int `json:"total"`
 	} `json:"result"`

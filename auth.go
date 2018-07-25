@@ -63,9 +63,11 @@ func (con *Connection) Authenticate(username, password string) (*AuthedConnectio
 	}, nil
 }
 
-type ConvertibleBoolean bool
+// PKBoolean exists to assist in Unmarshaling Pocket Casts unyieldly JSON where
+// bool fields are inconsistantly represented as either true/false or 1/0
+type PKBoolean bool
 
-func (bit ConvertibleBoolean) UnmarshalJSON(data []byte) error {
+func (bit PKBoolean) UnmarshalJSON(data []byte) error {
 	asString := string(data)
 	if asString == "1" || asString == "true" {
 		bit = true
