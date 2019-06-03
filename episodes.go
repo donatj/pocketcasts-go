@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func (acon *AuthedConnection) PodcastEpisodes(UUID PodcastUUID) (*PodcastEpisodes, error) {
+func (acon *AuthedConnection) GetPodcastEpisodes(UUID PodcastUUID) (*PodcastEpisodes, error) {
 	req, err := http.NewRequest("GET", "https://cache.pocketcasts.com/podcast/full/"+string(UUID)+"/0/2/1000", nil)
 
 	// Fetch Request
@@ -68,25 +68,78 @@ type PodcastEpisodes struct {
 	} `json:"podcast"`
 }
 
-type EpisodeStatus int
+func (acon *AuthedConnection) GetPodcastEpisodeStatuses(UUID PodcastUUID) (*PodcastEpisodeStatuses, error) {
+	type reqPodcastEpisodeStatuses struct {
+		UUID PodcastUUID `json:"uuid"`
+	}
+
+	sReq := reqPodcastEpisodeStatuses{
+		UUID: UUID,
+	}
+
+	reqJSON, err := json.Marshal(sReq)
+	if err != nil {
+		return nil, err
+	}
+
+	body := bytes.NewBuffer(reqJSON)
+
+	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/user/podcast/episodes", body)
+
+	// Fetch Request
+	resp, err := acon.Client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("request error: %s", resp.Status)
+	}
+
+	dec := json.NewDecoder(resp.Body)
+
+	out := &PodcastEpisodeStatuses{}
+
+	err = dec.Decode(out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+type EpisodePlayingStatus int
 
 const (
-	StatusUnplayed EpisodeStatus = iota
-	StatusStarted
-	StatusFinished
+	StatusUnplayed EpisodePlayingStatus = 1
+	StatusStarted  EpisodePlayingStatus = 2
+	StatusFinished EpisodePlayingStatus = 3
 )
 
-func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID, podcastUUID PodcastUUID, status EpisodeStatus) error {
+type PodcastEpisodeStatuses struct {
+	Episodes []struct {
+		UUID PodcastEpisodeUUID `json:"uuid"`
+
+		PlayingStatus EpisodePlayingStatus `json:"playingStatus"`
+
+		PlayedUpTo int  `json:"playedUpTo"`
+		IsDeleted  bool `json:"isDeleted"`
+		Starred    bool `json:"starred"`
+		Duration   int  `json:"duration"`
+	} `json:"episodes"`
+}
+
+func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID, podcastUUID PodcastUUID, status EpisodePlayingStatus) error {
 	type reqStatusUpdate struct {
-		UUID    PodcastEpisodeUUID `json:"uuid"`
-		Podcast PodcastUUID        `json:"podcast"`
-		Status  int                `json:"status"`
+		UUID    PodcastEpisodeUUID   `json:"uuid"`
+		Podcast PodcastUUID          `json:"podcast"`
+		Status  EpisodePlayingStatus `json:"status"`
 	}
 
 	statusReq := reqStatusUpdate{
 		UUID:    episodeUUID,
 		Podcast: podcastUUID,
-		Status:  int(status),
+		Status:  status,
 	}
 
 	reqJSON, err := json.Marshal(statusReq)
@@ -96,7 +149,46 @@ func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID
 
 	body := bytes.NewBuffer(reqJSON)
 
-	req, err := http.NewRequest("GET", "https://api.pocketcasts.com/sync/update_episode", body)
+	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/sync/update_episode", body)
+
+	// Fetch Request
+	resp, err := acon.Client.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("request error: %s", resp.Status)
+	}
+
+	return nil
+}
+
+func (acon *AuthedConnection) UpdateEpisodeArchive(episodeUUID PodcastEpisodeUUID, podcastUUID PodcastUUID, archive bool) error {
+	type reqArchiveUpdatePodcast struct {
+		UUID    PodcastEpisodeUUID `json:"uuid"`
+		Podcast PodcastUUID        `json:"podcast"`
+	}
+	type reqArchiveUpdate struct {
+		Episodes []reqArchiveUpdatePodcast `json:"episodes"`
+		Archive  bool                      `json:"archive"`
+	}
+
+	archiveReq := reqArchiveUpdate{
+		Episodes: []reqArchiveUpdatePodcast{
+			{episodeUUID, podcastUUID},
+		},
+		Archive: archive,
+	}
+
+	reqJSON, err := json.Marshal(archiveReq)
+	if err != nil {
+		return err
+	}
+
+	body := bytes.NewBuffer(reqJSON)
+
+	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/sync/update_episodes_archive", body)
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)
