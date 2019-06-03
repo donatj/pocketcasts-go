@@ -2,19 +2,16 @@ package pocketcasts
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"net/http/cookiejar"
-	"net/url"
-	"strings"
 )
 
 const endpointSignin = "https://play.pocketcasts.com/users/sign_in"
 
-type Connection struct {
-}
+type Connection struct{}
 
 type AuthedConnection struct {
 	Client *http.Client
@@ -23,38 +20,67 @@ type AuthedConnection struct {
 
 var ErrorInvalidUsernameOrPassword = errors.New("invalid username or password")
 
-func (con *Connection) Authenticate(username, password string) (*AuthedConnection, error) {
-	params := url.Values{}
-	params.Set("[user]email", username)
-	params.Set("[user]password", password)
-	body := bytes.NewBufferString(params.Encode())
-
-	jar, _ := cookiejar.New(nil)
-
-	client := &http.Client{
-		Jar: jar,
+func (con *Connection) Authenticate(email, password string) (*AuthedConnection, error) {
+	type authRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+		Scope    string `json:"scope"`
 	}
+
+	type authSuccess struct {
+		Token string `json:"token"`
+		UUID  string `json:"uuid"`
+	}
+
+	aReq := authRequest{
+		Email:    email,
+		Password: password,
+		Scope:    "webplayer",
+	}
+
+	reqJSON, err := json.Marshal(aReq)
+	if err != nil {
+		return nil, err
+	}
+
+	body := bytes.NewBuffer(reqJSON)
+
+	// Create client
+	client := &http.Client{}
 
 	// Create request
-	req, err := http.NewRequest("POST", "https://play.pocketcasts.com/users/sign_in", body)
+	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/user/login", body)
 	if err != nil {
 		return nil, err
 	}
 
-	// Fetch Request
+	req.Header.Add("Content-Type", "application/json")
+
 	resp, err := client.Do(req)
+
 	if err != nil {
-		return nil, err
+		fmt.Println("Failure : ", err)
 	}
 
 	// Read Response Body
-	respBody, err := ioutil.ReadAll(resp.Body)
+	respBody, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return nil, ErrorInvalidUsernameOrPassword
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("request error: %s", resp.Status)
+	}
+
+	respSuccess := authSuccess{}
+	err = json.Unmarshal(respBody, &respSuccess)
 	if err != nil {
 		return nil, err
 	}
 
-	if strings.Contains(strings.ToLower(string(respBody)), "invalid email or password") {
-		return nil, ErrorInvalidUsernameOrPassword
+	client.Transport = tokenTransport{
+		Token: respSuccess.Token,
 	}
 
 	return &AuthedConnection{
@@ -63,18 +89,18 @@ func (con *Connection) Authenticate(username, password string) (*AuthedConnectio
 	}, nil
 }
 
-// PKBoolean exists to assist in Unmarshaling Pocket Casts unyieldly JSON where
-// bool fields are inconsistantly represented as either true/false or 1/0
-type PKBoolean bool
+type tokenTransport struct {
+	Token string
+}
 
-func (bit PKBoolean) UnmarshalJSON(data []byte) error {
-	asString := string(data)
-	if asString == "1" || asString == "true" {
-		bit = true
-	} else if asString == "0" || asString == "false" {
-		bit = false
-	} else {
-		return errors.New(fmt.Sprintf("Boolean unmarshal error: invalid input %s", asString))
+func (t tokenTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	r.Header.Add("Authorization", "Bearer "+t.Token)
+
+	if r.Header.Get("Content-Type") == "" {
+		r.Header.Add("Content-Type", "application/json")
 	}
-	return nil
+
+	resp, err := http.DefaultTransport.RoundTrip(r)
+
+	return resp, err
 }
