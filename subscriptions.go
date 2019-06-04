@@ -18,6 +18,7 @@ func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, erro
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("request error: %s", resp.Status)

@@ -16,6 +16,7 @@ func (acon *AuthedConnection) GetPodcastEpisodes(UUID PodcastUUID) (*PodcastEpis
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("request error: %s", resp.Status)
@@ -156,6 +157,7 @@ func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("request error: %s", resp.Status)
@@ -195,6 +197,7 @@ func (acon *AuthedConnection) UpdateEpisodeArchive(episodeUUID PodcastEpisodeUUI
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("request error: %s", resp.Status)
