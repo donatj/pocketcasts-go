@@ -2,16 +2,26 @@ package pocketcasts
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
+	"time"
 )
 
 func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, error) {
-	req, err := http.NewRequest("POST", "https://play.pocketcasts.com/web/podcasts/all.json", nil)
+	body := strings.NewReader(`{"v":1}`)
+
+	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/user/podcast/list", body)
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)
 	if err != nil {
 		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("request error: %s", resp.Status)
 	}
 
 	dec := json.NewDecoder(resp.Body)
@@ -30,20 +40,17 @@ type PodcastUUID string
 
 type SubscribedPodcasts struct {
 	Podcasts []struct {
-		ID                int         `json:"id"`
-		UUID              PodcastUUID `json:"uuid"`
-		URL               string      `json:"url"`
-		Title             string      `json:"title"`
-		Description       string      `json:"description"`
-		ThumbnailURL      string      `json:"thumbnail_url"`
-		Author            string      `json:"author"`
-		EpisodesSortOrder int         `json:"episodes_sort_order"`
+		UUID                     PodcastUUID `json:"uuid"`
+		EpisodesSortOrder        int         `json:"episodesSortOrder"`
+		AutoStartFrom            int         `json:"autoStartFrom"`
+		Title                    string      `json:"title"`
+		Author                   string      `json:"author"`
+		Description              string      `json:"description"`
+		URL                      string      `json:"url"`
+		LastEpisodePublished     time.Time   `json:"lastEpisodePublished"`
+		Unplayed                 bool        `json:"unplayed"`
+		LastEpisodeUUID          string      `json:"lastEpisodeUuid"`
+		LastEpisodePlayingStatus int         `json:"lastEpisodePlayingStatus"`
+		LastEpisodeArchived      bool        `json:"lastEpisodeArchived"`
 	} `json:"podcasts"`
-
-	App struct {
-		UserVersionCode int     `json:"userVersionCode"`
-		VersionCode     int     `json:"versionCode"`
-		VersionName     float64 `json:"versionName"`
-		VersionSummary  string  `json:"versionSummary"`
-	} `json:"app"`
 }
