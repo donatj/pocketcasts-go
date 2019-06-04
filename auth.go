@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -45,10 +44,8 @@ func (con *Connection) Authenticate(email, password string) (*AuthedConnection, 
 
 	body := bytes.NewBuffer(reqJSON)
 
-	// Create client
 	client := &http.Client{}
 
-	// Create request
 	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/user/login", body)
 	if err != nil {
 		return nil, err
@@ -57,13 +54,10 @@ func (con *Connection) Authenticate(email, password string) (*AuthedConnection, 
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := client.Do(req)
-
 	if err != nil {
-		fmt.Println("Failure : ", err)
+		return nil, err
 	}
-
-	// Read Response Body
-	respBody, _ := ioutil.ReadAll(resp.Body)
+	defer resp.Body.Close()
 
 	if resp.StatusCode == http.StatusUnauthorized {
 		return nil, ErrorInvalidUsernameOrPassword
@@ -73,8 +67,10 @@ func (con *Connection) Authenticate(email, password string) (*AuthedConnection, 
 		return nil, fmt.Errorf("request error: %s", resp.Status)
 	}
 
+	dec := json.NewDecoder(resp.Body)
+
 	respSuccess := authSuccess{}
-	err = json.Unmarshal(respBody, &respSuccess)
+	err = dec.Decode(&respSuccess)
 	if err != nil {
 		return nil, err
 	}
