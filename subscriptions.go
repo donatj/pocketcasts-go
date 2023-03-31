@@ -38,6 +38,8 @@ func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, erro
 
 type PodcastUUID string
 
+type FolderUUID string
+
 type SubscribedPodcasts struct {
 	Podcasts []struct {
 		UUID                     PodcastUUID `json:"uuid"`
@@ -52,5 +54,17 @@ type SubscribedPodcasts struct {
 		LastEpisodeUUID          string      `json:"lastEpisodeUuid"`
 		LastEpisodePlayingStatus int         `json:"lastEpisodePlayingStatus"`
 		LastEpisodeArchived      bool        `json:"lastEpisodeArchived"`
+		AutoSkipLast             int         `json:"autoSkipLast"`
+		FolderUUID               string      `json:"folderUuid"`
+		SortPosition             int         `json:"sortPosition"`
+		DateAdded                time.Time   `json:"dateAdded"`
 	} `json:"podcasts"`
+	Folders []struct {
+		FolderUUID       FolderUUID `json:"folderUuid"`
+		Name             string     `json:"name"`
+		Color            int        `json:"color"`
+		SortPosition     int        `json:"sortPosition"`
+		PodcastsSortType int        `json:"podcastsSortType"`
+		DateAdded        time.Time  `json:"dateAdded"`
+	} `json:"folders"`
 }
