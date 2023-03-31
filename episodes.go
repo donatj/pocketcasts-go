@@ -10,6 +10,9 @@ import (
 
 func (acon *AuthedConnection) GetPodcastEpisodes(UUID PodcastUUID) (*PodcastEpisodes, error) {
 	req, err := http.NewRequest("GET", "https://cache.pocketcasts.com/podcast/full/"+string(UUID)+"/0/2/1000", nil)
+	if err != nil {
+		return nil, err
+	}
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)
