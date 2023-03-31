@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// GetPodcastEpisodes returns a list of episodes for a given podcast.
 func (acon *AuthedConnection) GetPodcastEpisodes(UUID PodcastUUID) (*PodcastEpisodes, error) {
 	req, err := http.NewRequest("GET", "https://cache.pocketcasts.com/podcast/full/"+string(UUID)+"/0/2/1000", nil)
 	if err != nil {
@@ -72,6 +73,7 @@ type PodcastEpisodes struct {
 	} `json:"podcast"`
 }
 
+// GetPodcastEpisodeStatuses returns a list of episode statuses for a given podcast.
 func (acon *AuthedConnection) GetPodcastEpisodeStatuses(UUID PodcastUUID) (*PodcastEpisodeStatuses, error) {
 	type reqPodcastEpisodeStatuses struct {
 		UUID PodcastUUID `json:"uuid"`
@@ -136,6 +138,7 @@ type PodcastEpisodeStatuses struct {
 	} `json:"episodes"`
 }
 
+// UpdateEpisodeStatus updates the status of a given episode.
 func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID, podcastUUID PodcastUUID, status EpisodePlayingStatus) error {
 	type reqStatusUpdate struct {
 		UUID    PodcastEpisodeUUID   `json:"uuid"`
@@ -175,6 +178,7 @@ func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID
 	return nil
 }
 
+// UpdateEpisodeArchive updates the archive aka "deleted" status of a given episode.
 func (acon *AuthedConnection) UpdateEpisodeArchive(episodeUUID PodcastEpisodeUUID, podcastUUID PodcastUUID, archive bool) error {
 	type reqArchiveUpdatePodcast struct {
 		UUID    PodcastEpisodeUUID `json:"uuid"`

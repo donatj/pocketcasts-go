@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+// GetSubscribedPodcasts returns a list of podcasts the user is subscribed to
+// as well as the users folders.
 func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, error) {
 	body := strings.NewReader(`{"v":1}`)
 

@@ -12,6 +12,7 @@ const endpointSignin = "https://play.pocketcasts.com/users/sign_in"
 
 type Connection struct{}
 
+// NewConnection creates a new connection to the PocketCasts API.
 func NewConnection() *Connection {
 	return &Connection{}
 }
@@ -23,6 +24,8 @@ type AuthedConnection struct {
 
 var ErrorInvalidUsernameOrPassword = errors.New("invalid username or password")
 
+// Authenticate authenticates a user with the PocketCasts API
+// and returns an AuthedConnection.
 func (con *Connection) Authenticate(email, password string) (*AuthedConnection, error) {
 	type authRequest struct {
 		Email    string `json:"email"`
