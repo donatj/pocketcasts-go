@@ -89,6 +89,9 @@ func (acon *AuthedConnection) GetPodcastEpisodeStatuses(UUID PodcastUUID) (*Podc
 	body := bytes.NewBuffer(reqJSON)
 
 	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/user/podcast/episodes", body)
+	if err != nil {
+		return nil, err
+	}
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)
@@ -154,6 +157,9 @@ func (acon *AuthedConnection) UpdateEpisodeStatus(episodeUUID PodcastEpisodeUUID
 	body := bytes.NewBuffer(reqJSON)
 
 	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/sync/update_episode", body)
+	if err != nil {
+		return err
+	}
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)
@@ -194,6 +200,9 @@ func (acon *AuthedConnection) UpdateEpisodeArchive(episodeUUID PodcastEpisodeUUI
 	body := bytes.NewBuffer(reqJSON)
 
 	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/sync/update_episodes_archive", body)
+	if err != nil {
+		return err
+	}
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)

@@ -12,6 +12,9 @@ func (acon *AuthedConnection) GetSubscribedPodcasts() (*SubscribedPodcasts, erro
 	body := strings.NewReader(`{"v":1}`)
 
 	req, err := http.NewRequest("POST", "https://api.pocketcasts.com/user/podcast/list", body)
+	if err != nil {
+		return nil, err
+	}
 
 	// Fetch Request
 	resp, err := acon.Client.Do(req)
