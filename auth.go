@@ -12,6 +12,10 @@ const endpointSignin = "https://play.pocketcasts.com/users/sign_in"
 
 type Connection struct{}
 
+func NewConnection() *Connection {
+	return &Connection{}
+}
+
 type AuthedConnection struct {
 	Client *http.Client
 	*Connection
