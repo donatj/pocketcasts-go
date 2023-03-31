@@ -47,22 +47,22 @@ type FolderUUID string
 
 type SubscribedPodcasts struct {
 	Podcasts []struct {
-		UUID                     PodcastUUID `json:"uuid"`
-		EpisodesSortOrder        int         `json:"episodesSortOrder"`
-		AutoStartFrom            int         `json:"autoStartFrom"`
-		Title                    string      `json:"title"`
-		Author                   string      `json:"author"`
-		Description              string      `json:"description"`
-		URL                      string      `json:"url"`
-		LastEpisodePublished     time.Time   `json:"lastEpisodePublished"`
-		Unplayed                 bool        `json:"unplayed"`
-		LastEpisodeUUID          string      `json:"lastEpisodeUuid"`
-		LastEpisodePlayingStatus int         `json:"lastEpisodePlayingStatus"`
-		LastEpisodeArchived      bool        `json:"lastEpisodeArchived"`
-		AutoSkipLast             int         `json:"autoSkipLast"`
-		FolderUUID               string      `json:"folderUuid"`
-		SortPosition             int         `json:"sortPosition"`
-		DateAdded                time.Time   `json:"dateAdded"`
+		UUID                     PodcastUUID        `json:"uuid"`
+		EpisodesSortOrder        int                `json:"episodesSortOrder"`
+		AutoStartFrom            int                `json:"autoStartFrom"`
+		Title                    string             `json:"title"`
+		Author                   string             `json:"author"`
+		Description              string             `json:"description"`
+		URL                      string             `json:"url"`
+		LastEpisodePublished     time.Time          `json:"lastEpisodePublished"`
+		Unplayed                 bool               `json:"unplayed"`
+		LastEpisodeUUID          PodcastEpisodeUUID `json:"lastEpisodeUuid"`
+		LastEpisodePlayingStatus int                `json:"lastEpisodePlayingStatus"`
+		LastEpisodeArchived      bool               `json:"lastEpisodeArchived"`
+		AutoSkipLast             int                `json:"autoSkipLast"`
+		FolderUUID               FolderUUID         `json:"folderUuid"`
+		SortPosition             int                `json:"sortPosition"`
+		DateAdded                time.Time          `json:"dateAdded"`
 	} `json:"podcasts"`
 	Folders []struct {
 		FolderUUID       FolderUUID `json:"folderUuid"`
